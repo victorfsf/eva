@@ -1,0 +1,10 @@
+#!/bin/sh
+NAME=$(git rev-parse --abbrev-ref HEAD)
+DESCRIPTION=$(git config branch."$NAME".description)
+
+echo "[$NAME] $(cat "$1")" > "$1"
+if [ -n "$DESCRIPTION" ]
+then
+   echo "\n" >> "$1"
+   echo $DESCRIPTION >> "$1"
+fi

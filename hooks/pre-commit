@@ -1,0 +1,6 @@
+#!/bin/sh
+flake8 --exclude .git,__pycache__,*/migrations/*,build,dist
+if [ $? -eq 1 ]; then
+    echo '\n\033[0;31mAborting commit due to file(s) with PEP8 errors.\033[0m'
+    exit 1
+fi
