@@ -35,7 +35,7 @@ class IOBReader(object):
                     tags = []
                     for tag in re.findall(tags_re, sentence):
                         tag, value = tag.split(' ', 1)
-                        pos = pos_tag(value)
+                        pos = pos_tag(value)[0]
                         first = [(pos[0][0], pos[0][1], 'B-%s' % tag)]
                         tags.append(
                             first + [(w, t, 'I-%s' % tag) for w, t in pos[1:]]
