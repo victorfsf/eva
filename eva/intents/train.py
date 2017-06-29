@@ -13,10 +13,11 @@ class IntentClassifier(LinearSVC):
             test_size=kwargs.pop('test_size', 0.2),
             random_state=kwargs.pop('random_state', 42)
         )
-        self.features, self.labels = zip(*reader.train_set)
         self.tfidf = TfidfVectorizer()
-        tfidf_features = self.tfidf.fit_transform(self.features)
-        return super().fit(tfidf_features, self.labels)
+        self.x_features, self.x_labels = zip(*reader.train_set)
+        self.y_features, self.y_labels = zip(*reader.test_set)
+        x_tfidf = self.tfidf.fit_transform(self.x_features)
+        return super().fit(x_tfidf, self.x_labels)
 
     def predict(self, features):
         if not hasattr(self, 'tfidf'):
@@ -41,3 +42,11 @@ class IntentClassifier(LinearSVC):
         _get_evaluations,
         metrics.confusion_matrix
     )
+
+    def __repr__(self):
+        return '%s(accuracy=%s, features=%s, labels=%s)' % (
+            self.__class__.__name__,
+            self.accuracy(zip(self.y_features, self.y_labels)),
+            len(self.x_features) + len(self.y_features),
+            len(set(self.x_labels + self.y_labels))
+        )

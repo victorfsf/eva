@@ -105,3 +105,9 @@ class IOBTagger(CRFTagger):
         ])
 
         return feature_list
+
+    def __repr__(self):
+        return '%s(model_file=\'%s\')' % (
+            self.__class__.__name__,
+            self._model_file,
+        )
