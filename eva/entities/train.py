@@ -17,17 +17,22 @@ class IOBTagger(CRFTagger):
         def tag_suffixes(length, features):
             if len(word) > length:
                 feature_list.append('SUF_' + word[-length:])
-                if prevword:
-                    feature_list.append('PREVSUF_' + prevword[-length:])
-                    feature_list.append('PREVSUF+SUF_%s+%s' % (
-                        prevword[-length:], word[-length:]
-                    ))
-                if nextword:
-                    feature_list.append('NEXTSUF_' + nextword[-length:])
-                    feature_list.append('SUF+NEXTSUF_%s+%s' % (
-                        word[-length:], nextword[-length:]
-                    ))
-                if prevword and nextword:
+                if prevword and len(prevword) > length:
+                    feature_list.extend([
+                        'PREVSUF_' + prevword[-length:],
+                        'PREVSUF+SUF_%s+%s' % (
+                            prevword[-length:], word[-length:]
+                        )
+                    ])
+                if nextword and len(nextword) > length:
+                    feature_list.extend([
+                        'NEXTSUF_' + nextword[-length:],
+                        'SUF+NEXTSUF_%s+%s' % (
+                            word[-length:], nextword[-length:]
+                        )
+                    ])
+                if prevword and len(prevword) > length and \
+                        nextword and len(nextword) > length:
                     feature_list.append('PREVSUF+SUF+NEXTSUF_%s+%s+%s' % (
                         prevword[-length:],
                         word[-length:],
@@ -51,7 +56,7 @@ class IOBTagger(CRFTagger):
         tag_suffixes(3, feature_list)
 
         if word[0].isupper():
-            feature_list.append('MAIUSCULO')
+            feature_list.append('CAPITALIZATION')
 
         pos_tags = {
             'ART': 'ARTIGO',
@@ -68,6 +73,11 @@ class IOBTagger(CRFTagger):
                 if pos == tag:
                     feature_list.append(label)
                     break
+
+        if word.isdigit():
+            feature_list.append('IS_NUMBER')
+        if any(c.isdigit() for c in word):
+            feature_list.append('HAS_NUMBER')
 
         tags_since_art = tags_since(tokens, i, 'ART', 'PREP+ART')
         if tags_since_art:

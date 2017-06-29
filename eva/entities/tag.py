@@ -1,5 +1,5 @@
 from boltons.cacheutils import LRI
-from eva.core.entities.train import IOBTagger
+from eva.entities.train import IOBTagger
 from nltk.chunk import conlltags2tree
 from nltk.tag import CRFTagger
 from nltk.tokenize import word_tokenize
@@ -22,20 +22,24 @@ def __cached_tagger(model_file, cache_key, tagger_model):
     return cache[cache_key]
 
 
-def pos_tag(*sents):
-    tagger = __cached_tagger('models/pos.model', 'pos_tag', CRFTagger)
+def pos_tag(*sents, **kwargs):
+    tagger = __cached_tagger(
+        kwargs.pop('model', 'models/pos.model'),
+        'pos_tag', CRFTagger
+    )
     return [
         tagger.tag(word_tokenize(sent))
         for sent in sents
     ]
 
 
-def iob_tag(*sents):
-    tagger = __cached_tagger('models/iob.model', 'iob_tag', IOBTagger)
-
-    def transform(tags): return [(w, p, i) for (w, p), i in tags]
+def iob_tag(*sents, **kwargs):
+    tagger = __cached_tagger(
+        kwargs.pop('model', 'models/iob.model'),
+        'iob_tag', IOBTagger
+    )
     return [
-        transform(tagger.tag(sent))
+        [(w, p, i) for (w, p), i in tagger.tag(sent)]
         for sent in pos_tag(*sents)
     ]
 

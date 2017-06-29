@@ -1,4 +1,4 @@
-from eva.core.entities.tag import pos_tag
+from eva.entities.tag import pos_tag
 from glob import glob
 from nltk.chunk import conlltags2tree
 from os.path import basename
@@ -53,7 +53,11 @@ class IOBReader(object):
                         except StopIteration:
                             iob += tagged_part
                     self.iob_sents.append(iob)
-        self.chunked_sents = [conlltags2tree(x) for x in self.iob_sents]
+
+        self.chunked_sents = [
+            conlltags2tree(x)
+            for x in self.iob_sents
+        ]
         self.iob_train, self.iob_test = train_test_split(
             [[((w, p), i) for w, p, i in s] for s in self.iob_sents],
             test_size=self.test_size,
