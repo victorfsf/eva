@@ -31,13 +31,13 @@ class IntentClassifier(LinearSVC):
 
     accuracy = partialmethod(
         _get_evaluations,
-        fn=metrics.accuracy_score
+        metrics.accuracy_score
     )
     report = partialmethod(
         _get_evaluations,
-        fn=metrics.classification_report
+        metrics.classification_report
     )
     confusion_matrix = partialmethod(
         _get_evaluations,
-        fn=metrics.confusion_matrix
+        metrics.confusion_matrix
     )
