@@ -20,14 +20,14 @@ class IntentClassifier(LinearSVC):
             test_size=kwargs.pop('test_size', 0.2),
             random_state=kwargs.pop('random_state', 42)
         )
-        self.x_features, self.x_labels = zip(*reader.train_set)
-        self.y_features, self.y_labels = zip(*reader.test_set)
+        self.train_features, self.train_labels = zip(*reader.train_set)
+        self.test_features, self.test_labels = zip(*reader.test_set)
         # TF-IDF
         self.tfidf = TfidfVectorizer()
-        x_tfidf = self.tfidf.fit_transform(
-            self.stem_features(self.x_features)  # STEMMING
+        train_tfidf = self.tfidf.fit_transform(
+            self.stem_features(self.train_features)  # STEMMING
         )
-        return super().fit(x_tfidf, self.x_labels)
+        return super().fit(train_tfidf, self.train_labels)
 
     def stem_features(self, features):
         if not hasattr(self, 'stemmer'):
@@ -50,8 +50,11 @@ class IntentClassifier(LinearSVC):
         )
         return super().predict(features)
 
-    def _get_evaluations(self, fn, feature_set):
-        features, labels = zip(*feature_set)
+    def _get_evaluations(self, fn, feature_set=None):
+        if feature_set:
+            features, labels = zip(*feature_set)
+        else:
+            features, labels = self.test_features, self.test_labels
         return fn(labels, self.predict(features))
 
     accuracy = partialmethod(
@@ -72,7 +75,7 @@ class IntentClassifier(LinearSVC):
             return super().__repr__()
         return '%s(accuracy=%s, features=%s, labels=%s)' % (
             self.__class__.__name__,
-            self.accuracy(zip(self.y_features, self.y_labels)),
-            len(self.x_features) + len(self.y_features),
+            self.accuracy(),
+            len(self.train_features) + len(self.test_features),
             len(self.classes_)
         )
