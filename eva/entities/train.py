@@ -1,5 +1,9 @@
 from nltk.tag.crf import CRFTagger
 
+__all__ = [
+    'IOBTagger'
+]
+
 
 class IOBTagger(CRFTagger):
 

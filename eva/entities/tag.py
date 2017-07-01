@@ -5,6 +5,10 @@ from nltk.tag import CRFTagger
 from nltk.tokenize import word_tokenize
 import os
 
+__all__ = [
+    'pos_tag', 'iob_tag', 'ne_chunk'
+]
+
 cache = LRI(max_size=2)
 
 

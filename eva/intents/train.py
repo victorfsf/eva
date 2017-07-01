@@ -7,6 +7,10 @@ from sklearn import metrics
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.svm import LinearSVC
 
+__all__ = [
+    'IntentClassifier'
+]
+
 
 class IntentClassifier(LinearSVC):
 
@@ -70,5 +74,5 @@ class IntentClassifier(LinearSVC):
             self.__class__.__name__,
             self.accuracy(zip(self.y_features, self.y_labels)),
             len(self.x_features) + len(self.y_features),
-            len(set(self.x_labels + self.y_labels))
+            len(self.classes_)
         )
