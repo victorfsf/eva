@@ -1,12 +1,13 @@
 from boltons.cacheutils import LRI
 from eva.entities.train import IOBTagger
+from nltk import Tree
 from nltk.chunk import conlltags2tree
 from nltk.tag import CRFTagger
 from nltk.tokenize import word_tokenize
 import os
 
 __all__ = [
-    'pos_tag', 'iob_tag', 'ne_chunk'
+    'pos_tag', 'iob_tag', 'ne_chunk', 'entity_dict'
 ]
 
 cache = LRI(max_size=2)
@@ -48,7 +49,21 @@ def iob_tag(*sents, **kwargs):
     ]
 
 
-def ne_chunk(*sents):
+def ne_chunk(*sents, **kwargs):
     return [
-        conlltags2tree(i) for i in iob_tag(*sents)
+        conlltags2tree(i) for i in iob_tag(*sents, **kwargs)
     ]
+
+
+def entity_dict(*sents, **kwargs):
+    for tree in ne_chunk(*sents, **kwargs):
+        entities = []
+        for branch in tree:
+            if isinstance(branch, Tree):
+                entities.append({
+                    'name': branch.label(),
+                    'value': ' '.join([
+                        x for x, _ in branch.leaves()
+                    ])
+                })
+        yield entities
