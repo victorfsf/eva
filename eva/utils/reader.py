@@ -49,7 +49,7 @@ class IOBReader(object):
                         tag, value = tag.split(' ', 1)
                         words = word_tokenize(value)
                         first = [(
-                            words[0],  self.pop_pos(pos_tags, words[0]),
+                            words[0], self.pop_pos(pos_tags, words[0]),
                             'B-%s' % tag
                         )]
                         tags.append(
