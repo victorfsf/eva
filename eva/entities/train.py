@@ -80,8 +80,11 @@ class IOBTagger(CRFTagger):
 
         if word.isdigit():
             feature_list.append('IS_NUMBER')
-        if any(c.isdigit() for c in word):
+        elif any(c.isdigit() for c in word):
             feature_list.append('HAS_NUMBER')
+
+        if '/' in word:
+            feature_list.append('HAS_DASH')
 
         tags_since_art = tags_since(tokens, i, 'ART', 'PREP+ART')
         if tags_since_art:

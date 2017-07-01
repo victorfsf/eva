@@ -31,7 +31,13 @@ class IOBReader(object):
         self.iob_sents = []
         self.sents = []
         self.feature_set = []
+        self.train_set = []
+        self.test_set = []
+        self.iob_train = []
+        self.iob_test = []
         for filename in glob(self.dirname):
+            file_feature_set = []
+            file_iob_sents = []
             with open(filename, 'rb') as f:
                 tags_re = r'\[(.*?)\]'
                 tags_sub = r'\[[A-Z]+\s|\]'
@@ -39,7 +45,7 @@ class IOBReader(object):
                     sentence = sentence.decode('utf8')
                     text = re.sub(tags_sub, '', sentence).strip('\n').strip()
                     self.sents.append(text)
-                    self.feature_set.append(
+                    file_feature_set.append(
                         (text, splitext(basename(filename))[0])
                     )
 
@@ -70,22 +76,28 @@ class IOBReader(object):
                             iob += tagged_part + ne
                         except StopIteration:
                             iob += tagged_part
-                    self.iob_sents.append(iob)
+                    file_iob_sents.append(iob)
+            self.feature_set.extend(file_feature_set)
+            self.iob_sents.extend(file_iob_sents)
+            file_iob_train, file_iob_test = train_test_split(
+                [[((w, p), i) for w, p, i in s] for s in file_iob_sents],
+                test_size=self.test_size,
+                random_state=self.random_state
+            )
+            file_train_set, file_test_set = train_test_split(
+                file_feature_set,
+                test_size=self.test_size,
+                random_state=self.random_state
+            )
+            self.iob_train.extend(file_iob_train)
+            self.iob_test.extend(file_iob_test)
+            self.train_set.extend(file_train_set)
+            self.test_set.extend(file_test_set)
 
         self.chunked_sents = [
             conlltags2tree(x)
             for x in self.iob_sents
         ]
-        self.iob_train, self.iob_test = train_test_split(
-            [[((w, p), i) for w, p, i in s] for s in self.iob_sents],
-            test_size=self.test_size,
-            random_state=self.random_state
-        )
-        self.train_set, self.test_set = train_test_split(
-            self.feature_set,
-            test_size=self.test_size,
-            random_state=self.random_state
-        )
 
     def __repr__(self):
         return '%s(sents=%s)' % (
