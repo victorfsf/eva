@@ -21,6 +21,7 @@ setup(
         'scikit-learn==0.18.1',
         'scipy==0.19.0',
         'boltons==17.1.0',
+        'requests==2.18.1'
     ],
     zip_safe=False,
     version=version,
