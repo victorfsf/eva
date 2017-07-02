@@ -1,5 +1,5 @@
 from boltons.cacheutils import LRI
-from eva.config import MODELS_PATH
+from eva.config import EVA_PATH
 from eva.entities.train import IOBTagger
 from nltk import Tree
 from nltk.chunk import conlltags2tree
@@ -20,7 +20,7 @@ def __cached_tagger(model_file, cache_key, tagger_model):
         tagger = tagger_model()
         tagger.set_model_file(
             os.path.join(
-                os.getcwd(), join(MODELS_PATH, 'models', model_file)
+                os.getcwd(), join(EVA_PATH, 'models', model_file)
             )
         )
         cache.update({

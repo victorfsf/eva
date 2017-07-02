@@ -1,5 +1,5 @@
 from boltons.cacheutils import LRI
-from eva.config import MODELS_PATH
+from eva.config import EVA_PATH
 from os.path import join
 import pickle
 
@@ -14,7 +14,7 @@ def get_intent(*sents, **kwargs):
     if 'intent' not in cache:
         model_file = kwargs.pop(
             'model',
-            join(MODELS_PATH, 'models', 'intents.model')
+            join(EVA_PATH, 'models', 'intents.model')
         )
         with open(model_file, 'rb') as f:
             cache.update({

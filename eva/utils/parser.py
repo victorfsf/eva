@@ -16,3 +16,10 @@ def parse(*sents):
             sents
         )
     ]
+
+
+def extract_text(entities, entity_type):
+    return [
+        x['value'] for x in entities
+        if x['type'] == entity_type
+    ]

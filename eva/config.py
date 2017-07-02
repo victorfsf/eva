@@ -8,6 +8,10 @@ EVA_PATH = os.path.join(
     '.eva',
 )
 
+INTENT_MAPPING = {
+    'horario_disciplina': 'eva.responses.intents.horario_disciplina',
+}
+
 
 def set_eva_path(path):
     if path:
