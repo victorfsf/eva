@@ -61,7 +61,7 @@ def entity_dict(*sents, **kwargs):
         for branch in tree:
             if isinstance(branch, Tree):
                 entities.append({
-                    'name': branch.label(),
+                    'type': branch.label(),
                     'value': ' '.join([
                         x for x, _ in branch.leaves()
                     ])

@@ -1,5 +1,5 @@
 from eva.entities.tag import entity_dict
-from eva.intents.classify import intent
+from eva.intents.classify import get_intent
 
 __all__ = ['parse']
 
@@ -7,7 +7,11 @@ __all__ = ['parse']
 def parse(*sents):
     return [
         {
-            'entities': next(entity_dict(sent)),
-            'intent': intent(sent)[0]
-        } for sent in sents
+            'entities': entities,
+            'intent': intent
+        } for entities, intent, sent in zip(
+            entity_dict(*sents),
+            get_intent(*sents),
+            sents
+        )
     ]
