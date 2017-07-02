@@ -20,7 +20,7 @@ def __cached_tagger(model_file, cache_key, tagger_model):
         tagger = tagger_model()
         tagger.set_model_file(
             os.path.join(
-                os.getcwd(), join(MODELS_PATH, model_file)
+                os.getcwd(), join(MODELS_PATH, 'models', model_file)
             )
         )
         cache.update({

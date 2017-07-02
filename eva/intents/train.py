@@ -14,9 +14,9 @@ __all__ = [
 
 class IntentClassifier(LinearSVC):
 
-    def fit(self, path='data/', **kwargs):
+    def fit(self, **kwargs):
         reader = IOBReader(
-            path,
+            kwargs.pop('path', 'data/iob'),
             test_size=kwargs.pop('test_size', 0.2),
             random_state=kwargs.pop('random_state', 42)
         )

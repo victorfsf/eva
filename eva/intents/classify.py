@@ -14,7 +14,7 @@ def get_intent(*sents, **kwargs):
     if 'intent' not in cache:
         model_file = kwargs.pop(
             'model',
-            join(MODELS_PATH, 'intents.model')
+            join(MODELS_PATH, 'models', 'intents.model')
         )
         with open(model_file, 'rb') as f:
             cache.update({
