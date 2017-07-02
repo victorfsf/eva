@@ -34,5 +34,6 @@ class PortugueseParserInfo(dateutil_parser.parserinfo):
 
 
 date_parse = partial(
-    dateutil_parser.parse, parserinfo=PortugueseParserInfo(dayfirst=True)
+    dateutil_parser.parse,
+    parserinfo=PortugueseParserInfo(dayfirst=True)
 )
