@@ -8,7 +8,8 @@ def parse(*sents):
     return [
         {
             'entities': entities,
-            'intent': intent
+            'intent': intent,
+            'raw': sent
         } for entities, intent, sent in zip(
             entity_dict(*sents),
             get_intent(*sents),
