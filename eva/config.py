@@ -49,12 +49,3 @@ def download(path=None):
             'blob/master/models/%s?raw=true' % name,
             subfolder='models'
         )
-
-    for response in glob.glob('data/responses/*'):
-        name = os.path.basename(response)
-        logger.info('Downloading: %s' % name)
-        from_url(
-            'https://raw.githubusercontent.com/victorfsf/eva/'
-            'master/data/responses/%s' % name,
-            subfolder='responses'
-        )
