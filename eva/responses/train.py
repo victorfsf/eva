@@ -36,10 +36,10 @@ class LSIndexer(object):
 
     def transform(self, document):
         return [
-                self.stemmer.stem(word.strip())
-                for word in regex_tokenize(document.lower())
-                if word not in self.stemmer.stopwords
-            ]
+            self.stemmer.stem(word.strip())
+            for word in regex_tokenize(document.lower())
+            if word not in self.stemmer.stopwords
+        ]
 
     def similarities(self, document):
         stem = self.transform(document)
@@ -54,15 +54,24 @@ class LSIndexer(object):
         if similarities:
             return similarities[0][0]
 
-    def get(self, document, limit=None, negatives=True):
+    def get(self, document, min_=None, limit=None):
         similarities = self.similarities(document)
         if similarities:
-            result = [s[0] for s in similarities if s[1] > 0 or negatives]
+            result = [
+                s[0] for s in similarities
+                if min_ is None or s[1] > min_
+            ]
             return result[:limit] if limit else result
 
     def save(self, path):
         with open(join(EVA_PATH, path), 'wb') as f:
             pickle.dump(self, f)
+        return self
+
+    def load(self, path):
+        with open(join(EVA_PATH, path), 'rb') as f:
+            instance = pickle.load(f)
+            self.__dict__ = instance.__dict__
         return self
 
     def __repr__(self):
