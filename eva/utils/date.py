@@ -5,6 +5,7 @@ __all__ = ['date_parse']
 
 
 class PortugueseParserInfo(dateutil_parser.parserinfo):
+
     HMS = [
         ('h', 'hr', 'hrs', 'hora', 'horas'),
         ('m', 'min', 'minuto', 'minutos'),
@@ -35,5 +36,6 @@ class PortugueseParserInfo(dateutil_parser.parserinfo):
 
 date_parse = partial(
     dateutil_parser.parse,
+    fuzzy=True,
     parserinfo=PortugueseParserInfo(dayfirst=True)
 )
