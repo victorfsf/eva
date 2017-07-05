@@ -6,6 +6,7 @@ from gensim import models
 from gensim import similarities
 from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
+from toolz import frequencies
 
 __all__ = [
     'LSIndexer',
@@ -15,62 +16,69 @@ __all__ = [
 class LSIndexer(SerializeMixin):
 
     def __init__(self, *args, **kwargs):
-        self.channels = defaultdict(dict)
+        self.sections = defaultdict(dict)
         super().__init__(*args, **kwargs)
 
-    def fit(self, channel, documents, speller=None, num_topics=250):
-        ch = self.channels[channel]
+    def fit(self, section, documents, **kwargs):
+        sec = self.sections[section]
         self.stemmer = SnowballStemmer(language='portuguese')
         self.stemmer.stopwords = stopwords.words('portuguese')
-        if speller:
-            ch['speller'] = speller
-        ch['documents'] = documents
+
+        sec['speller'] = kwargs.pop('speller', None)
+        sec['documents'] = documents
         texts = [
-            self.transform(channel, document) for document in documents
+            self.transform(section, document) for document in documents
         ]
-        ch['dictionary'] = corpora.Dictionary(texts)
-        ch['corpus'] = [
-            ch['dictionary'].doc2bow(text)
+
+        frequency = kwargs.pop('frequency', 0)
+        if frequency > 0:
+            freq_dict = frequencies([y for x in texts for y in x])
+            texts = [x for x in texts if freq_dict[x] > frequency]
+
+        sec['dictionary'] = corpora.Dictionary(texts)
+        sec['corpus'] = [
+            sec['dictionary'].doc2bow(text)
             for text in texts
         ]
-        ch['tfidf'] = models.TfidfModel(ch['corpus'])
-        ch['lsi'] = models.LsiModel(
-            ch['tfidf'][ch['corpus']],
-            id2word=ch['dictionary'],
-            num_topics=num_topics
+
+        sec['tfidf'] = models.TfidfModel(sec['corpus'])
+        sec['lsi'] = models.LsiModel(
+            sec['tfidf'][sec['corpus']],
+            id2word=sec['dictionary'],
+            num_topics=kwargs.pop('num_topics', 250)
         )
-        ch['index'] = similarities.MatrixSimilarity(
-            ch['lsi'][ch['corpus']]
+        sec['index'] = similarities.MatrixSimilarity(
+            sec['lsi'][sec['corpus']]
         )
 
-    def correct(self, channel, word):
-        ch = self.channels[channel]
-        if 'speller' in ch:
-            return ch['speller'].correct(word)
+    def correct(self, section, word):
+        sec = self.sections[section]
+        if sec.get('speller'):
+            return sec['speller'].correct(word)
         return word
 
-    def transform(self, channel, document):
+    def transform(self, section, document):
         return [
-            self.stemmer.stem(self.correct(channel, word.strip()))
+            self.stemmer.stem(self.correct(section, word.strip()))
             for word in regex_tokenize(document.lower())
             if word not in self.stemmer.stopwords
         ]
 
-    def similarities(self, channel, document):
-        stem = self.transform(channel, document)
-        ch = self.channels[channel]
-        lsi = ch['lsi'][ch['dictionary'].doc2bow(stem)]
-        return [(ch['documents'][x], y) for x, y in sorted(
-            enumerate(ch['index'][lsi]),
+    def similarities(self, section, document):
+        stem = self.transform(section, document)
+        sec = self.sections[section]
+        lsi = sec['lsi'][sec['dictionary'].doc2bow(stem)]
+        return [(sec['documents'][x], y) for x, y in sorted(
+            enumerate(sec['index'][lsi]),
             key=lambda item: -item[1]
         )]
 
-    def search(self, channel, document):
-        similarities = self.similarities(channel, document)
+    def search(self, section, document):
+        similarities = self.similarities(section, document)
         if similarities:
             return similarities[0][0]
 
-    def get(self, channel, document, ratio=None, limit=None):
+    def get(self, section, document, ratio=None, limit=None):
         similarities = self.similarities(document)
         if similarities:
             result = [
@@ -80,10 +88,10 @@ class LSIndexer(SerializeMixin):
             return result[:limit] if limit else result
 
     def __repr__(self):
-        return '%s(channels=%s)' % (
+        return '%s(sections=%s)' % (
             self.__class__.__name__,
-            len(self.channels), len([
-                y for x, z in self.channels.items()
+            len(self.sections), len([
+                y for x, z in self.sections.items()
                 for y in z['documents']
             ])
         )
