@@ -90,8 +90,5 @@ class LSIndexer(SerializeMixin):
     def __repr__(self):
         return '%s(sections=%s)' % (
             self.__class__.__name__,
-            len(self.sections), len([
-                y for x, z in self.sections.items()
-                for y in z['documents']
-            ])
+            len(self.sections)
         )
