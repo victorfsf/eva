@@ -27,14 +27,12 @@ class LSIndexer(SerializeMixin):
         self.stemmer.stopwords = stopwords.words('portuguese')
         sec.documents = documents
         texts = [
-            self.transform(section, document) for document in documents
+            self.transform(section, document)
+            for document in documents
         ]
         sec.speller = Speller(documents)
         frequency = kwargs.pop('frequency', 0)
-        if frequency > 0:
-            freq_dict = frequencies([y for x in texts for y in x])
-            texts = [x for x in texts if freq_dict[x] > frequency]
-
+        texts = self.tokenize(texts, frequency)
         sec.dictionary = corpora.Dictionary(texts)
         sec.corpus = [
             sec.dictionary.doc2bow(text)
@@ -50,6 +48,12 @@ class LSIndexer(SerializeMixin):
         sec.index = similarities.MatrixSimilarity(
             sec.lsi[sec.corpus]
         )
+
+    def tokenize(self, texts, frequency):
+        if frequency > 0:
+            freq_dict = frequencies([y for x in texts for y in x])
+            texts = [x for x in texts if freq_dict[x] > frequency]
+        return texts
 
     def correct(self, section, word):
         sec = self.sections[section]
@@ -80,7 +84,7 @@ class LSIndexer(SerializeMixin):
         return None
 
     def get(self, section, document, ratio=None, limit=None):
-        similarities = self.similarities(document)
+        similarities = self.similarities(section, document)
         if similarities:
             result = [
                 s[0] for s in similarities
