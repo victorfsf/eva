@@ -1,4 +1,5 @@
 from eva.utils import IOBReader
+from eva.utils.mixins import SerializeMixin
 from functools import partialmethod
 from nltk import word_tokenize
 from nltk.corpus import stopwords
@@ -12,7 +13,7 @@ __all__ = [
 ]
 
 
-class IntentClassifier(LinearSVC):
+class IntentClassifier(SerializeMixin, LinearSVC):
 
     def fit(self, **kwargs):
         reader = IOBReader(

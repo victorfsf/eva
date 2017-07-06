@@ -2,7 +2,7 @@ from eva.entities.tag import entity_dict
 from eva.intents.classify import get_intent
 from itertools import zip_longest
 
-__all__ = ['parse', 'extract_text', 'zip_fill']
+__all__ = ['parse', 'zip_fill']
 
 
 def parse(*sents):
@@ -16,13 +16,6 @@ def parse(*sents):
             get_intent(*sents),
             sents
         )
-    ]
-
-
-def extract_text(entities, entity_type):
-    return [
-        x['value'] for x in entities
-        if x['type'] == entity_type
     ]
 
 

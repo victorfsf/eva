@@ -1,8 +1,8 @@
 from .date import date_parse
-from .parser import extract_text
 from .parser import parse
 from .parser import zip_fill
 from .reader import IOBReader
+from .text import extract_text
 from .text import normalize_ascii
 from .text import regex_tokenize
 

@@ -2,7 +2,7 @@ import regex as re
 import unicodedata
 
 
-__all__ = ['normalize_ascii', 'regex_tokenize']
+__all__ = ['normalize_ascii', 'regex_tokenize', 'extract_text']
 
 
 def normalize_ascii(value):
@@ -21,3 +21,10 @@ def regex_tokenize(sentence):
             sentence
         )
     )))
+
+
+def extract_text(entities, entity_type):
+    return [
+        x['value'] for x in entities
+        if x['type'] == entity_type
+    ]
