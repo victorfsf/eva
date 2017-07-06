@@ -1,4 +1,5 @@
 from difflib import SequenceMatcher
+from eva.utils import normalize_ascii
 from eva.utils import regex_tokenize
 from eva.utils.mixins import SerializeMixin
 from toolz import frequencies
@@ -11,18 +12,17 @@ __all__ = [
 
 class Speller(SerializeMixin):
 
-    def __init__(self, documents, alphabet=None):
+    def __init__(self, documents):
         self.words = frequencies(map(
             str.lower,
             re.findall(
                 r'\w+|\d+',
-                ' '.join({y for x in documents for y in regex_tokenize(x)})
+                ' '.join({
+                    y for x in documents for y in regex_tokenize(x)
+                })
             )
         ))
-        self.alphabet = alphabet or (
-            'abcdefghijklmnopqrstuvwxyz1234567890'
-            'ãâàáäẽêèéëĩîìíïõôòóöûũùúü-'
-        )
+        self.alphabet = {y for x in self.words for y in x}
         super().__init__()
 
     def get_edits1(self, word):
@@ -59,13 +59,16 @@ class Speller(SerializeMixin):
 
     def correct(self, word):
         word = word.lower()
-        return max(
-            self.candidates(word),
-            key=lambda x: self.get_probability(word, x)
-        )
+        if not word.isdigit():
+            return max(
+                self.candidates(word),
+                key=lambda x: self.get_probability(word, x)
+            )
+        return word
 
     def candidates(self, word):
         if word:
+            word = normalize_ascii(word.lower())
             return (
                 self.get_known_words([word]) or
                 self.get_known_words(self.get_edits1(word)) or
