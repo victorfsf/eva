@@ -1,6 +1,5 @@
 from collections import defaultdict
 from eva.utils.mixins import SerializeMixin
-from eva.responses.train.spell import Speller
 from eva.utils import regex_tokenize
 from gensim import corpora
 from gensim import models
@@ -9,6 +8,7 @@ from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
 from sklearn.datasets.base import Bunch
 from toolz import frequencies
+import regex as re
 
 __all__ = [
     'LSIndexer',
@@ -19,7 +19,7 @@ class LSIndexer(SerializeMixin):
 
     def __init__(self, *args, **kwargs):
         self.sections = defaultdict(Bunch)
-        super().__init__(*args, **kwargs)
+        self.spellers = LSSpeller()
 
     def fit(self, section, documents, **kwargs):
         sec = self.sections[section]
@@ -30,9 +30,18 @@ class LSIndexer(SerializeMixin):
             self.transform(section, document)
             for document in documents
         ]
-        sec.speller = Speller(documents)
+        self.spellers.fit(section, documents)
+        self.build(section, texts, **kwargs)
+
+    def build(self, section, texts, **kwargs):
+        sec = self.sections[section]
         frequency = kwargs.pop('frequency', 0)
-        texts = self.tokenize(texts, frequency)
+        if frequency > 0:
+            freq_dict = frequencies([y for x in texts for y in x])
+            texts = [
+                [y for y in x if freq_dict[y] > frequency]
+                for x in texts
+            ]
         sec.dictionary = corpora.Dictionary(texts)
         sec.corpus = [
             sec.dictionary.doc2bow(text)
@@ -49,16 +58,9 @@ class LSIndexer(SerializeMixin):
             sec.lsi[sec.corpus]
         )
 
-    def tokenize(self, texts, frequency):
-        if frequency > 0:
-            freq_dict = frequencies([y for x in texts for y in x])
-            texts = [x for x in texts if freq_dict[x] > frequency]
-        return texts
-
     def correct(self, section, word):
-        sec = self.sections[section]
-        if sec.get('speller'):
-            return sec.speller.correct(word)
+        if section in self.spellers.sections:
+            return self.spellers.search(section, word)
         return word
 
     def transform(self, section, document):
@@ -98,3 +100,29 @@ class LSIndexer(SerializeMixin):
             self.__class__.__name__,
             len(self.sections)
         )
+
+
+class LSSpeller(LSIndexer):
+
+    def __init__(self, *args, **kwargs):
+        self.sections = defaultdict(Bunch)
+
+    def fit(self, section, documents, **kwargs):
+        sec = self.sections[section]
+        documents = re.findall(
+            r'\w+|\d+',
+            ' '.join({
+                y.strip().lower() for x in documents
+                for y in regex_tokenize(x)
+                if not y.isdigit()
+            })
+        )
+        sec.documents = documents
+        texts = [
+            self.transform(section, document)
+            for document in documents
+        ]
+        self.build(section, texts, **kwargs)
+
+    def transform(self, section, document):
+        return [word for word in document]

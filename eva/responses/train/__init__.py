@@ -1,6 +1,6 @@
 from .index import LSIndexer
-from .spell import Speller
+from .index import LSSpeller
 
 __all__ = [
-    'LSIndexer', 'Speller'
+    'LSIndexer', 'LSSpeller'
 ]
